@@ -32,7 +32,7 @@ export default function Navbar() {
       className={cn(
         'sticky top-0 z-50 w-full transition-all duration-300',
         scrolled
-          ? 'border-b border-slate-800/60 bg-slate-950/90 backdrop-blur-lg shadow-lg shadow-black/20'
+          ? 'border-b border-slate-200/60 dark:border-slate-800/60 bg-white/90 dark:bg-slate-950/90 backdrop-blur-lg shadow-lg shadow-black/5 dark:shadow-black/20'
           : 'bg-transparent',
       )}
     >
@@ -42,8 +42,8 @@ export default function Navbar() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-all duration-200 group-hover:scale-105">
             <TrendingUp className="h-4 w-4 text-white" strokeWidth={2.5} />
           </div>
-          <span className="text-lg font-bold text-slate-100 tracking-tight">
-            Stock<span className="text-indigo-400">Sight</span>
+          <span className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+            Stock<span className="text-indigo-500 dark:text-indigo-400">Sight</span>
           </span>
         </Link>
 
@@ -56,8 +56,8 @@ export default function Navbar() {
               className={cn(
                 'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
                 location.pathname === to
-                  ? 'bg-indigo-500/15 text-indigo-400'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60',
+                  ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/60',
               )}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -71,7 +71,7 @@ export default function Navbar() {
           <button
             onClick={() => setIsDark(!isDark)}
             aria-label="Toggle theme"
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors duration-150"
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition-colors duration-150"
           >
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>

@@ -9,6 +9,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 import type { HistoricalPrice } from '@/types/stock'
+import { useIsDark } from '@/hooks/useIsDark'
 
 interface StockChartProps {
   data: HistoricalPrice[]
@@ -24,14 +25,23 @@ interface CustomTooltipProps {
   active?: boolean
   payload?: TooltipPayload[]
   label?: string
+  isDark: boolean
 }
 
-function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+function CustomTooltip({ active, payload, label, isDark }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-slate-900 border border-slate-700/60 rounded-lg px-3 py-2 shadow-2xl shadow-black/40">
-      <p className="text-slate-500 text-xs mb-0.5">{label}</p>
-      <p className="text-slate-100 font-semibold text-sm">
+    <div
+      style={{
+        backgroundColor: isDark ? '#0f172a' : '#ffffff',
+        border: `1px solid ${isDark ? 'rgba(51,65,85,0.6)' : 'rgba(226,232,240,1)'}`,
+      }}
+      className="rounded-lg px-3 py-2 shadow-2xl shadow-black/10"
+    >
+      <p style={{ color: isDark ? '#94a3b8' : '#64748b' }} className="text-xs mb-0.5">
+        {label}
+      </p>
+      <p style={{ color: isDark ? '#f1f5f9' : '#0f172a' }} className="font-semibold text-sm">
         ${payload[0].value.toFixed(2)}
       </p>
     </div>
@@ -39,6 +49,8 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export default function StockChart({ data, symbol, predictedPrice }: StockChartProps) {
+  const isDark = useIsDark()
+
   if (!data.length) return null
 
   const firstPrice = data[0].price
@@ -54,6 +66,12 @@ export default function StockChart({ data, symbol, predictedPrice }: StockChartP
 
   const tickInterval = Math.max(1, Math.floor(data.length / 6))
 
+  // Recharts only accepts raw values — Tailwind classes don't work here
+  const gridColor = isDark ? '#1e293b' : '#e2e8f0'
+  const tickColor = isDark ? '#64748b' : '#94a3b8'
+  const cursorColor = isDark ? '#334155' : '#cbd5e1'
+  const dotStroke = isDark ? '#0f172a' : '#ffffff'
+
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -65,12 +83,12 @@ export default function StockChart({ data, symbol, predictedPrice }: StockChartP
             </linearGradient>
           </defs>
 
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
 
           <XAxis
             dataKey="date"
             stroke="transparent"
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: tickColor, fontSize: 11 }}
             tickLine={false}
             axisLine={false}
             interval={tickInterval}
@@ -82,7 +100,7 @@ export default function StockChart({ data, symbol, predictedPrice }: StockChartP
 
           <YAxis
             stroke="transparent"
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: tickColor, fontSize: 11 }}
             tickLine={false}
             axisLine={false}
             tickFormatter={(val: number) => `$${val.toFixed(0)}`}
@@ -90,7 +108,10 @@ export default function StockChart({ data, symbol, predictedPrice }: StockChartP
             domain={[minPrice, maxPrice]}
           />
 
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#334155', strokeWidth: 1 }} />
+          <Tooltip
+            content={<CustomTooltip isDark={isDark} />}
+            cursor={{ stroke: cursorColor, strokeWidth: 1 }}
+          />
 
           {predictedPrice && (
             <ReferenceLine
@@ -115,7 +136,7 @@ export default function StockChart({ data, symbol, predictedPrice }: StockChartP
             strokeWidth={2}
             fill={`url(#${gradientId})`}
             dot={false}
-            activeDot={{ r: 4, fill: strokeColor, stroke: '#0f172a', strokeWidth: 2 }}
+            activeDot={{ r: 4, fill: strokeColor, stroke: dotStroke, strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
