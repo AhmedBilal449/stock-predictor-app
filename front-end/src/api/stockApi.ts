@@ -1,6 +1,8 @@
-import type { PredictionRequest, PredictionResult, HistoricalData } from '../types/stock'
+import type { PredictionRequest, PredictionResult, HistoricalData, HistoricalPrice } from '../types/stock'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+
+// ── Real API calls ─────────────────────────────────────────────────────────────
 
 export async function predictStock(request: PredictionRequest): Promise<PredictionResult> {
   const response = await fetch(`${API_BASE}/predict`, {
@@ -19,33 +21,51 @@ export async function getHistoricalData(symbol: string): Promise<HistoricalData>
   const response = await fetch(`${API_BASE}/historical/${symbol.toUpperCase()}`)
   if (!response.ok) {
     const err = await response.json().catch(() => ({}))
-    throw new Error((err as { detail?: string }).detail ?? `Failed to fetch historical data (${response.status})`)
+    throw new Error(
+      (err as { detail?: string }).detail ?? `Failed to fetch historical data (${response.status})`,
+    )
   }
   return response.json() as Promise<HistoricalData>
 }
 
-// ── Mock helpers for when the API is unavailable ──────────────────────────────
+// ── Mock helpers (fallback when the API is unreachable) ────────────────────────
+// These mirror the backend's deterministic output so the UI is always demeable.
 
 export function generateMockHistoricalData(symbol: string): HistoricalData {
-  const prices = []
+  const prices: HistoricalPrice[] = []
   let price = 100 + Math.random() * 150
   const now = new Date()
+  const PERIOD_DAYS = 90
 
-  for (let i = 90; i >= 0; i--) {
-    const date = new Date(now)
-    date.setDate(date.getDate() - i)
-    // Random walk with slight upward drift
+  for (let i = PERIOD_DAYS; i >= 0; i--) {
+    const d = new Date(now)
+    d.setDate(d.getDate() - i)
+    if (d.getDay() === 0 || d.getDay() === 6) continue // skip weekends
+
     price = price * (1 + (Math.random() - 0.47) * 0.025)
+    const close = Math.round(price * 100) / 100
+    const open = Math.round(close * (1 + (Math.random() - 0.5) * 0.012) * 100) / 100
+    const high = Math.round(Math.max(open, close) * (1 + Math.random() * 0.01) * 100) / 100
+    const low = Math.round(Math.min(open, close) * (1 - Math.random() * 0.01) * 100) / 100
+
     prices.push({
-      date: date.toISOString().split('T')[0],
-      price: Math.round(price * 100) / 100,
+      date: d.toISOString().split('T')[0],
+      open,
+      high,
+      low,
+      close,
+      price: close,
+      volume: Math.round(20_000_000 + Math.random() * 40_000_000),
     })
   }
 
-  return { symbol, prices }
+  return { symbol, prices, period_days: PERIOD_DAYS }
 }
 
-export function generateMockPrediction(symbol: string, prices: { price: number }[]): PredictionResult {
+export function generateMockPrediction(
+  symbol: string,
+  prices: Pick<HistoricalPrice, 'price'>[],
+): PredictionResult {
   const lastPrice = prices[prices.length - 1]?.price ?? 150
   const trends = ['bullish', 'bearish', 'neutral'] as const
   const trend = trends[Math.floor(Math.random() * trends.length)]
@@ -60,5 +80,7 @@ export function generateMockPrediction(symbol: string, prices: { price: number }
     confidence: 0.60 + Math.random() * 0.35,
     current_price: lastPrice,
     change_percent: Math.round(changePercent * 100) / 100,
+    model_version: 'mock-v1.0',
+    generated_at: new Date().toISOString(),
   }
 }

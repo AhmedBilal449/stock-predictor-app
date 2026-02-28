@@ -79,6 +79,17 @@ function getTrendConfig(trend: Trend): TrendConfig {
   }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatGeneratedAt(iso: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC',
+    timeZoneName: 'short',
+  }).format(new Date(iso))
+}
+
 // ── Skeleton card ─────────────────────────────────────────────────────────────
 
 function SkeletonCard() {
@@ -351,11 +362,12 @@ export default function Dashboard() {
                     ${prediction.predicted_price.toFixed(2)}
                   </div>
                   <p className="text-xs text-slate-500">Predicted Price</p>
-                  {prediction.current_price != null && (
-                    <p className="text-xs text-slate-600 mt-1">
-                      Current: <span className="text-slate-400">${prediction.current_price.toFixed(2)}</span>
-                    </p>
-                  )}
+                  <p className="text-xs text-slate-600 mt-1">
+                    Current: <span className="text-slate-400">${prediction.current_price.toFixed(2)}</span>
+                  </p>
+                  <p className="text-[10px] text-slate-700 mt-1.5">
+                    Generated {formatGeneratedAt(prediction.generated_at)}
+                  </p>
                 </CardContent>
               </Card>
 
@@ -425,6 +437,9 @@ export default function Dashboard() {
                     <span className="text-[10px] text-slate-700">Low</span>
                     <span className="text-[10px] text-slate-700">High</span>
                   </div>
+                  <p className="text-[10px] text-slate-700 mt-2 font-mono">
+                    model: {prediction.model_version}
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -444,7 +459,7 @@ export default function Dashboard() {
                           {prediction.symbol} — Price History
                         </CardTitle>
                         <CardDescription className="text-slate-600 text-xs mt-1">
-                          {historicalData.prices.length} trading days · dashed line = AI target
+                          {historicalData.period_days}-day window · {historicalData.prices.length} trading days · dashed = AI target
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-4 text-xs text-slate-500">
