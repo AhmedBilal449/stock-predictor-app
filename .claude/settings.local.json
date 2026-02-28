@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(mkdir front-end:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
+    ]
+  }
+}
